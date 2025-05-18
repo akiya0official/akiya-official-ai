@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .generator-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        #promptInput {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #resultContainer {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .generated-image {
+            max-width: 100%;
+            border-radius: 5px;
+            margin-top: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .loading {
+            display: none;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="generator-container">
+        <h1>AI Image Generator</h1>
+        <textarea 
+            id="promptInput" 
+            rows="3" 
+            placeholder="Describe the image you want to generate..."
+        ></textarea>
+        <button onclick="generateImage()">Generate Image</button>
+        <div class="loading" id="loading">Generating... (This may take 20-30 seconds)</div>
+        <div id="resultContainer"></div>
+    </div>
+
+    <script>
+        async function generateImage() {
+            const prompt = document.getElementById('promptInput').value;
+            const loading = document.getElementById('loading');
+            const resultContainer = document.getElementById('resultContainer');
+
+            if (!prompt) {
+                alert('Please enter a description');
+                return;
+            }
+
+            try {
+                loading.style.display = 'block';
+                resultContainer.innerHTML = '';
+
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ prompt })
+                });
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                const img = document.createElement('img');
+                img.src = data.imageUrl;
+                img.className = 'generated-image';
+                resultContainer.appendChild(img);
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
